@@ -1,6 +1,5 @@
 """
-VacSIM Environment: COVID-19 Vaccine Allocation Environment.
-Faithful PyTorch/NumPy reproduction of the environment defined in Awasthi et al. (2022).
+VaxOpt: COVID-19 Vaccine Allocation RL Environment.
 """
 
 import copy
@@ -15,7 +14,7 @@ class StatesEnv:
         Discrete(buckets), where action a in {0, ..., buckets-1}.
         Fraction allocated: A = a / buckets.
         Vials distributed: V = A * total_vials.
-        
+               
     Reward:
         R = 100 * exp( - (A - S)^2 / 1e-4 )
         where S is the susceptible ratio (feature index 4).
@@ -139,9 +138,6 @@ class StatesEnv:
 
 def extract_context_data(csv_path: str):
     """
-    Parses projections.csv and computes normalized context features
-    grouped by date across the 5 Indian states.
-    
     Returns:
         dates (list of str): Unique dates in order
         state_names (list of str): Names of the 5 states

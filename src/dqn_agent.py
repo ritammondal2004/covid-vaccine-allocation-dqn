@@ -17,7 +17,7 @@ import torch.optim as optim
 
 class QNetwork(nn.Module):
     """
-    Q-Network architecture matching VacSIM Paper (Figure 1):
+    Q-Network architecture:
     Input (9 features) -> Linear(9, 64) -> ReLU -> Linear(64, 64) -> ReLU -> Linear(64, num_actions)
     """
 

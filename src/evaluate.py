@@ -1,5 +1,5 @@
 """
-Evaluation and Allocation Generation script for VacSIM.
+Evaluation and Allocation Generation script for VaxOpt.
 Loads trained DQN checkpoints, computes normalized vaccine distributions across states,
 compares against Naive (incidence-based) baseline and published Table 3 results,
 and outputs evaluation CSVs and comparison plots.
@@ -102,7 +102,7 @@ def evaluate():
         sys.exit(1)
 
     print("=" * 70)
-    print("VacSIM DQN Model Evaluation")
+    print("VaxOpt DQN Model Evaluation")
     print(f"Checkpoint:       {ckpt_path}")
     print(f"Dataset:          {args.data_path}")
     print(f"Evaluation Dates: {args.test_start_date} to {args.test_end_date}")

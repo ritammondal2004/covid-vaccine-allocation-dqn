@@ -1,5 +1,5 @@
 """
-Training script for DQN-based COVID-19 Vaccine Allocation (VacSIM).
+Training script for VaxOpt: DQN-based COVID-19 Vaccine Allocation.
 Supports automatic checkpoint saving, periodic Drive syncing, and seamless resume.
 """
 
@@ -94,7 +94,7 @@ def train():
     best_ckpt_path = os.path.join(checkpoint_dir, "best.pt")
 
     print("=" * 70)
-    print("VacSIM DQN Training — COVID-19 Vaccine Allocation")
+    print("VaxOpt DQN Training — COVID-19 Vaccine Allocation")
     print(f"Data file:         {args.data_path}")
     print(f"Output directory:  {args.output_dir}")
     print(f"Action buckets:    {args.buckets}")

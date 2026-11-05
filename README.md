@@ -1,12 +1,13 @@
-# DQN-Based COVID-19 Vaccine Allocation (VacSIM Reproduction)
+# VaxOpt: DQN-Based COVID-19 Vaccine Allocation
 
-This project reproduces the **Deep Q-Network (DQN) vaccine allocation component** from the research paper:
+**VaxOpt** is a reinforcement learning framework for optimizing COVID-19 vaccine distribution across Indian states using Deep Q-Networks (DQN).
 
+Inspired by the methodology in:
 > **Awasthi et al. (2022)**, *Learning Effective Strategies for COVID-19 Vaccine Distribution using Reinforcement Learning.*  
 > *Intelligence-Based Medicine*, 6, 100060.  
-> [ScienceDirect Paper Link](https://doi.org/10.1016/j.ibmed.2022.100060) | [Original Repository](https://github.com/tavlab-iiitd/VacSIM)
+> [ScienceDirect Paper Link](https://doi.org/10.1016/j.ibmed.2022.100060)
 
-The scope is strictly focused on reproducing the value-based DQN allocation policy using a lightweight, modern PyTorch implementation while maintaining faithful alignment with the mathematical formulations and hyperparameters of the paper.
+VaxOpt provides a clean, lightweight PyTorch implementation designed for academic reproducibility, fast training, and Google Colab execution with automatic checkpoint saving and resume capabilities.
 
 ---
 
@@ -41,16 +42,9 @@ The vaccine allocation problem is formulated as an episodic reinforcement learni
 ## 2. Repository Structure
 
 ```text
-VacSIM/
+covid-vaccine-allocation-dqn/
 ├── data/
-│   ├── DQN_200-500_BucketSize.csv               # Reference CB/DQN predictions from authors
-│   ├── Naive Approach Results_27thDec-31stJan.csv# Reference naive baseline comparisons
-│   ├── projections.csv                          # Primary dataset (155 rows, 5 states, Dec 2020)
-│   └── readme.md                                # Original data documentation
-├── models/
-│   ├── DQN.py                                   # Original author's TF1.x code (reference)
-│   ├── Normalization_of_Buckets.ipynb           # Original notebook showing bucket normalization
-│   └── readme.md
+│   └── projections.csv                          # Primary dataset (155 rows, 5 states, Dec 2020)
 ├── src/
 │   ├── __init__.py                              # Module init
 │   ├── dqn_agent.py                             # PyTorch DQN, ReplayBuffer, QNetwork
@@ -58,8 +52,7 @@ VacSIM/
 │   ├── train.py                                 # Training pipeline with --resume auto and periodic checkpoints
 │   └── evaluate.py                              # Allocation generator, Table 3 validation, and plot generation
 ├── .gitignore
-├── LICENSE
-├── README.md                                    # This file
+├── README.md                                    # Project documentation
 └── requirements.txt                             # PyTorch dependencies
 ```
 
@@ -120,9 +113,9 @@ If your Colab GPU session disconnects or expires, simply re-run with `--resume a
     --output_dir /content/drive/MyDrive/RL_Project \
     --iterations 10000 \
     --save_interval 1000 \
-    --buckets 1000 \
+    --buckets 1000 \  
     --resume auto
-```
+```  
 
 ### Step 5: Run Evaluation and Generate Allocations
 Evaluate the trained DQN model against the Naive baseline on the test period (27–31 December 2020):
