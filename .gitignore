@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.pt
+*.tmp
+checkpoints/
+outputs/
+test_output/
+.ipynb_checkpoints/
+
