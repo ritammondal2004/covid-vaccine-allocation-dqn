@@ -24,59 +24,89 @@ The vaccine allocation task is modeled as an episodic Markov Decision Process (M
 
 ### A. State Space ($\mathcal{S} \subset \mathbb{R}^9$)
 For each state $i$ on date $t$, the agent observes a continuous 9-dimensional context vector $s \in [0, 1]^9$:
-1. **Confirmed cases ratio:** $\frac{\text{Confirmed}_i}{\sum_{k=1}^5 \text{Confirmed}_k}$
-2. **Predicted death rate ($dr$):** $\frac{\text{Deaths}_i}{\text{Confirmed}_i}$
-3. **Predicted recovery rate ($rr$):** $\frac{\text{Recoveries}_i}{\text{Confirmed}_i}$
-4. **Population ratio:** $\frac{\text{Population}_i}{\sum_{k=1}^5 \text{Population}_k}$
-5. **Predicted susceptible ratio ($S_i$):** $\frac{\text{Susceptible}_i}{\sum_{k=1}^5 \text{Susceptible}_k}$
-6. **Overall hospital beds ratio:** $\frac{\text{Hospital Beds}_i}{\sum_{k=1}^5 \text{Hospital Beds}_k}$
-7. **Overall ICU beds ratio:** $\frac{\text{ICU Beds}_i}{\sum_{k=1}^5 \text{ICU Beds}_k}$
-8. **Ventilators ratio:** $\frac{\text{Ventilators}_i}{\sum_{k=1}^5 \text{Ventilators}_k}$
-9. **Age distribution ratio (>50 yrs):** $\frac{\text{Age}>50_i}{\sum_{k=1}^5 \text{Age}>50_k}$
+
+| # | Context Feature | Symbol | Normalization Formula |
+|:---:|---|:---:|:---:|
+| 1 | Confirmed Cases Ratio | $C_i$ | $\frac{\text{Confirmed}_i}{\sum_{k=1}^5 \text{Confirmed}_k}$ |
+| 2 | Predicted Death Rate | $dr_i$ | $\frac{\text{Deaths}_i}{\text{Confirmed}_i}$ |
+| 3 | Predicted Recovery Rate | $rr_i$ | $\frac{\text{Recoveries}_i}{\text{Confirmed}_i}$ |
+| 4 | Population Ratio | $P_i$ | $\frac{\text{Population}_i}{\sum_{k=1}^5 \text{Population}_k}$ |
+| 5 | Predicted Susceptible Ratio | $S_i$ | $\frac{\text{Susceptible}_i}{\sum_{k=1}^5 \text{Susceptible}_k}$ |
+| 6 | Hospital Beds Ratio | $B_i$ | $\frac{\text{Hospital Beds}_i}{\sum_{k=1}^5 \text{Hospital Beds}_k}$ |
+| 7 | ICU Beds Ratio | $ICU_i$ | $\frac{\text{ICU Beds}_i}{\sum_{k=1}^5 \text{ICU Beds}_k}$ |
+| 8 | Ventilators Ratio | $V_i$ | $\frac{\text{Ventilators}_i}{\sum_{k=1}^5 \text{Ventilators}_k}$ |
+| 9 | Age Distribution (>50 yrs) Ratio | $A_{50, i}$ | $\frac{\text{Age}>50_i}{\sum_{k=1}^5 \text{Age}>50_k}$ |
 
 ### B. Action Space ($\mathcal{A}$)
-- The action space is discretized into $n$ discrete allocation buckets:
-  $$\mathcal{A} = \{0, 1, 2, \dots, n-1\}, \quad \text{where } n = 1000 \text{ (default)}$$
-- An action $a_i \in \mathcal{A}$ corresponds to allocating a fraction $A_i$ of the total available vaccine pool:
-  $$A_i = \frac{a_i}{n}$$
-- Doses allotted in one round of distribution:
-  $$V_i = A_i \times \text{Total Batch Size}, \quad \text{where Total Batch Size} = 1,000,000 \text{ vials (10 lakh)}$$
+* The action space is discretized into $n$ discrete allocation buckets:
+  $$
+  \mathcal{A} = \{0, 1, 2, \dots, n-1\}, \quad \text{where } n = 1000 \text{ (default)}
+  $$
+* An action $a_i \in \mathcal{A}$ corresponds to allocating a fraction $A_i$ of the total available vaccine pool:
+  $$
+  A_i = \frac{a_i}{n}
+  $$
+* Doses allotted in one round of distribution:
+  $$
+  V_i = A_i \times \text{Batch Size}, \quad \text{where Batch Size} = 1,000,000 \text{ vials (10 lakh)}
+  $$
 
 ### C. Reward Function ($\mathcal{R}$)
 The reward function optimizes vaccine distribution by penalizing any discrepancy between the allocated vaccine fraction ($A_i$) and the state's share of the susceptible population ($S_i$):
-$$R_i(s, a) = 100 \cdot \exp\left( - \frac{(A_i - S_i)^2}{10^{-4}} \right) = 100 \cdot \exp\left( - 10000 \cdot (A_i - S_i)^2 \right)$$
+
+$$
+R_i(s, a) = 100 \cdot \exp\left( - \frac{(A_i - S_i)^2}{10^{-4}} \right) = 100 \cdot \exp\left( - 10000 \cdot (A_i - S_i)^2 \right)
+$$
+
 * **Maximum Reward ($R = 100$):** Achieved when the allocation matches the susceptible share exactly ($A_i = S_i$).
-* **Exponential Penalty:** Because the variance parameter is $\sigma^2 = \frac{10^{-4}}{2}$, even a $1\%$ deviation ($|A_i - S_i| = 0.01$) reduces the reward to $100 \cdot e^{-1} \approx 36.79$, and a $2\%$ deviation reduces it to $1.83$.
+* **Exponential Penalty:** Because the variance parameter is $\sigma^2 = \frac{10^{-4}}{2}$, even a 1% deviation ($|A_i - S_i| = 0.01$) reduces the reward to $100 \cdot e^{-1} \approx 36.79$, and a 2% deviation reduces it to $1.83$.
 
 ### D. Transition Dynamics & Episode Structure
 * Administering $V_i$ doses transitions the state's susceptible count:
-  $$\text{Susceptible}_i' = \max(0, \, \text{Susceptible}_i - V_i)$$
+  $$
+  \text{Susceptible}_i' = \max(0, \, \text{Susceptible}_i - V_i)
+  $$
 * Feature index 4 (susceptible ratio) updates to reflect the remaining proportion:
-  $$S_i' = \frac{\text{Susceptible}_i - V_i}{\sum_k \text{Susceptible}_k - V_i}$$
+  $$
+  S_i' = \frac{\text{Susceptible}_i - V_i}{\sum_k \text{Susceptible}_k - V_i}
+  $$
 * The episode terminates after 1 allocation step per state per date (`done = True`).
 
 ### E. Deep Q-Network (DQN) & Policy Update Formulas
 The Q-network approximates the optimal action-value function $Q^*(s, a)$, satisfying the Bellman Optimality Equation:
-$$Q^*(s, a) = \mathbb{E}\left[ r + \gamma \max_{a' \in \mathcal{A}} Q^*(s', a') \;\middle|\; s, a \right]$$
+
+$$
+Q^*(s, a) = \mathbb{E}\left[ r + \gamma \max_{a' \in \mathcal{A}} Q^*(s', a') \;\middle|\; s, a \right]
+$$
 
 1. **Network Architecture:**
-   $$9 \xrightarrow{\text{Linear}} 64 \xrightarrow{\text{ReLU}} 64 \xrightarrow{\text{Linear}} 64 \xrightarrow{\text{ReLU}} 64 \xrightarrow{\text{Linear}} 1000$$
+   $$
+   9 \xrightarrow{\text{Linear}} 64 \xrightarrow{\text{ReLU}} 64 \xrightarrow{\text{Linear}} 64 \xrightarrow{\text{ReLU}} 64 \xrightarrow{\text{Linear}} 1000
+   $$
 2. **Temporal Difference (TD) Target with Target Network $\theta^-$:**
-   $$y = r + (1 - \text{done}) \cdot \gamma \max_{a' \in \mathcal{A}} Q(s', a'; \theta^-)$$
+   $$
+   y = r + (1 - \text{done}) \cdot \gamma \max_{a' \in \mathcal{A}} Q(s', a'; \theta^-)
+   $$
 3. **Loss Function:**
-   $$L(\theta) = \frac{1}{B} \sum_{j=1}^B \left( y_j - Q(s_j, a_j; \theta) \right)^2$$
+   $$
+   L(\theta) = \frac{1}{B} \sum_{j=1}^B \left( y_j - Q(s_j, a_j; \theta) \right)^2
+   $$
 4. **Target Network Sync:**
    Weights $\theta^-$ are synchronized with the active policy network $\theta$ every 200 optimization steps.
 5. **Exploration Strategy:**
-   $\epsilon$-greedy policy starting at $\epsilon_0 = 1.0$ and linearly annealed down to $\epsilon_{\min} = 0.10$ ($10\%$ exploration, matching paper Table 2).
+   $\epsilon$-greedy policy starting at $\epsilon_0 = 1.0$ and linearly annealed down to $\epsilon_{\min} = 0.10$ (10% exploration, matching paper Table 2).
 
 ### F. Multi-State Allocation Rule & Naive Baseline
 1. **DQN Normalized Allocation:**
    On any test date, actions $a_1, \dots, a_5$ predicted greedily across the 5 states are normalized into percentage shares:
-   $$\text{DQN Allocation } \% (s) = 100 \times \frac{a_s}{\sum_{k=1}^5 a_k}$$
+   $$
+   \text{DQN Allocation \%}(s) = 100 \times \frac{a_s}{\sum_{k=1}^5 a_k}
+   $$
 2. **Naive Baseline Policy (Paper Section 3.4):**
    Allocates vaccines strictly proportional to confirmed infected cases:
-   $$\text{Naive Allocation } \% (s) = 100 \times \frac{\text{Confirmed}_s}{\sum_{k=1}^5 \text{Confirmed}_k}$$
+   $$
+   \text{Naive Allocation \%}(s) = 100 \times \frac{\text{Confirmed}_s}{\sum_{k=1}^5 \text{Confirmed}_k}
+   $$
 
 ---
 
@@ -219,5 +249,5 @@ Evaluation on the test period (27–31 December 2020) demonstrates that the DQN 
 | **Nagaland** | 1.04% | 0.40% | **0.91%** | 9,082 |
 
 ### Key Policy Takeaway:
-* **The Failure of the Naive Approach:** Allocating doses strictly by current confirmed cases severely disadvantages states like **Jharkhand** (allocated only $5.31\%$ despite having $17.35\%$ of the susceptible population) and excessively concentrates doses in **Maharashtra** ($67.45\%$).
-* **The DQN Advantage:** By incorporating susceptible populations and healthcare capacities into the state space, the DQN policy learns an equitable distribution with an error of just **$0.31\%$**, preventing supply shortages in high-vulnerability regions.
+* **The Failure of the Naive Approach:** Allocating doses strictly by current confirmed cases severely disadvantages states like **Jharkhand** (allocated only 5.31% despite having 17.35% of the susceptible population) and excessively concentrates doses in **Maharashtra** (67.45%).
+* **The DQN Advantage:** By incorporating susceptible populations and healthcare capacities into the state space, the DQN policy learns an equitable distribution with an error of just **0.31%**, preventing supply shortages in high-vulnerability regions.
