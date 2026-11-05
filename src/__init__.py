@@ -1,2 +1,0 @@
-# VacSIM Python package
-
