@@ -1,0 +1,5 @@
+Metric,Value
+Average DQN Reward,82.1278
+Average Naive Reward,19.8126
+DQN Mean Abs Error to Susceptible (%),0.4067
+Naive Mean Abs Error to Susceptible (%),5.7861
