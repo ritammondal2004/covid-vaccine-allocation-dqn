@@ -7,4 +7,5 @@ checkpoints/
 outputs/
 test_output/
 .ipynb_checkpoints/
-
+build_documentation_docx.py 
+VaxOpt_Project_Documentation.docx
