@@ -9,3 +9,16 @@ test_output/
 .ipynb_checkpoints/
 build_documentation_docx.py 
 VaxOpt_Project_Documentation.docx
+*tex
+*pdf
+*out 
+
+*.log
+*.aux
+*.bbl
+
+*.synctex.gz
+*.toc
+*.vrb
+training_reward_curve.png 
+allocation_comparison.png
